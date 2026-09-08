@@ -58,7 +58,7 @@ arrow keys work everywhere `hjkl` do.
 | --- | --- |
 | `alt` + `h` `j` `k` `l` | Focus the window left / down / up / right |
 | `alt` + `shift` + `h` `j` `k` `l` | Move the focused window in that direction |
-| `alt` + `1`–`9` | Focus workspace 1–9 (press again to jump back) |
+| `alt` + `1`–`9` | Focus workspace 1–9 |
 | `alt` + `shift` + `1`–`9` | Send the focused window to that workspace and follow it |
 | `alt` + `a` / `s` | Focus the previous / next active workspace |
 | `alt` + `d` | Focus the last workspace you were on |
@@ -82,15 +82,17 @@ arrow keys work everywhere `hjkl` do.
 | --- | --- |
 | `alt` + `u` / `p` | Shrink / grow width by 2% |
 | `alt` + `i` / `o` | Shrink / grow height by 2% |
-| `alt` + `r` | Resize mode — then `hjkl` or arrows to resize, `escape` to exit |
+| `alt` + `r` | Resize mode — then `hjkl` or arrows to resize, `escape` or `enter` to exit |
 
 ### Launchers
 
 | Keys | Action |
 | --- | --- |
-| `alt` + `enter` | Windows Terminal |
-| `alt` + `shift` + `enter` | cmd |
-| `alt` + `shift` + `n` | File Explorer |
+| `alt` + `enter` | Terminal (`cmd`) |
+
+`cmd` rather than `wt` so the binding works on machines without Windows
+Terminal. `config.yaml` has the `wt` and Git Bash alternatives commented next
+to it.
 
 ### Window manager
 
@@ -103,17 +105,25 @@ arrow keys work everywhere `hjkl` do.
 
 ## Notes on what's set
 
-- **Gaps** are 8px inside and out. Every option is commented in `config.yaml`.
-- **Zebar** (the status bar) is *not* launched by default, since it isn't
-  installed everywhere. To enable it, uncomment `startup_commands` /
-  `shutdown_commands` under `general:` and raise `gaps.outer_gap.top` to ~40px
-  so windows don't sit under the bar.
-- **Borders** are drawn on the focused window only (Windows 11 only — the API
-  doesn't exist on Windows 10).
+- **Zebar** (the status bar) is launched at startup and killed on shutdown, and
+  `gaps.outer_gap.top` is 40px to leave room for it. On a PC without Zebar the
+  startup command fails harmlessly, but that 40px strip is then just dead
+  space — fork the config for that machine, or install Zebar there too.
+- **Gaps** are 4px between windows and 4px at the screen edges, apart from the
+  40px top.
+- **Borders** are drawn on every window: `#8dbcff` when focused, `#a1a1a1`
+  otherwise. Windows 11 only — the API doesn't exist on Windows 10.
+- **Taskbar** shows windows from every workspace, not just the visible ones
+  (`show_all_in_taskbar: true`).
 - **Workspaces** 1–9 exist on every machine and aren't pinned to monitors, which
   is what lets one file work everywhere.
-- **Window rules** ignore things that shouldn't be tiled (picture-in-picture,
-  PowerToys overlays, Zebar) and float Task Manager and similar dialogs.
+- **Window rules** ignore things that shouldn't be tiled: Zebar, Snipping Tool
+  and its clipping overlay, browser picture-in-picture, PowerToys overlays,
+  Lively, and the Office helper windows.
+
+Commented-out starting points in `config.yaml` — floating Task Manager, pinning
+an app to a workspace, `single_window_outer_gap`, and upstream's newer
+PowerToys Command Palette rule — are there to uncomment if you want them.
 
 To find the process name, class, or title to write a new window rule with,
 focus the window and run:

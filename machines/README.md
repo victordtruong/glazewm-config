@@ -8,7 +8,9 @@ shared:
   how many displays that PC has and how Windows numbered them.
 - **Launcher keybindings** that point at an app which isn't installed on every
   machine (e.g. `shell-exec wt` on a Windows 10 box without Windows Terminal).
-- **`startup_commands`**, if only some machines run Zebar.
+- **`startup_commands`** and the 40px `gaps.outer_gap.top` that goes with them:
+  the shared config launches Zebar and reserves a strip for it. A PC without
+  Zebar wants that gap back down to `4px`.
 
 GlazeWM has no include/import mechanism — a config is a single file — so a
 machine that needs different settings gets its own full copy here:
