@@ -1,0 +1,333 @@
+# GlazeWM config — shared across all my PCs.
+#
+# Install:  powershell -ExecutionPolicy Bypass -File .\install.ps1
+# Reload:   alt+shift+r  (or: glazewm command wm-reload-config)
+# Docs:     https://github.com/glzr-io/glazewm
+#
+# This file is intentionally machine-agnostic: nothing in here assumes a
+# particular monitor layout or an app that isn't on every machine. Anything
+# machine-specific lives in machines/<COMPUTERNAME>/config.yaml — see
+# machines/README.md.
+
+general:
+  # Commands to run when the WM has started.
+  # Uncomment if Zebar (the status bar) is installed on every machine you
+  # use this config on. If you enable it, also raise `gaps.outer_gap.top`
+  # below to ~40px so windows don't sit underneath the bar.
+  startup_commands: []
+  # startup_commands: ['shell-exec zebar']
+
+  # Commands to run just before the WM is shut down.
+  shutdown_commands: []
+  # shutdown_commands: ['shell-exec taskkill /IM zebar.exe /F']
+
+  # Commands to run after the config is reloaded.
+  config_reload_commands: []
+
+  # Whether to automatically focus windows underneath the cursor.
+  focus_follows_cursor: false
+
+  # Pressing the current workspace's key again jumps back to the previous
+  # workspace (alt+1, alt+1 = toggle).
+  toggle_workspace_on_refocus: true
+
+  cursor_jump:
+    # Move the cursor along with focus, so clicking lands where you're looking.
+    enabled: true
+    # 'monitor_focus': only when focus moves between monitors.
+    # 'window_focus':  on every focus change.
+    trigger: 'monitor_focus'
+
+  # How windows are hidden when switching workspaces.
+  # 'cloak' is the recommended option on Windows; 'hide' is the legacy one.
+  hide_method: 'cloak'
+
+  # false = the taskbar only shows windows on the visible workspaces.
+  show_all_in_taskbar: false
+
+gaps:
+  # Scale gaps with each monitor's DPI. Keep this on when mixing a laptop
+  # screen with external monitors, otherwise gaps look wrong on one of them.
+  scale_with_dpi: true
+
+  # Gap between adjacent windows.
+  inner_gap: '8px'
+
+  # Gap between windows and the screen edge.
+  # Raise `top` to ~40px if you run Zebar or another top bar.
+  outer_gap:
+    top: '8px'
+    right: '8px'
+    bottom: '8px'
+    left: '8px'
+
+  # Uncomment to remove the border gap when a workspace has only one window.
+  # single_window_outer_gap:
+  #   top: '0px'
+  #   right: '0px'
+  #   bottom: '0px'
+  #   left: '0px'
+
+window_effects:
+  # Effects applied to the focused window.
+  focused_window:
+    # Colored border around the focused window. Windows 11 only.
+    border:
+      enabled: true
+      color: '#8dbcff'
+
+    # Removing title bars can break rendering in some apps; off by default.
+    hide_title_bar:
+      enabled: false
+
+    # Windows 11 only. Allowed styles: 'square', 'rounded', 'small_rounded'.
+    corner_style:
+      enabled: false
+      style: 'square'
+
+    transparency:
+      enabled: false
+      opacity: '95%'
+
+  # Effects applied to every other window.
+  other_windows:
+    border:
+      enabled: false
+      color: '#a1a1a1'
+    hide_title_bar:
+      enabled: false
+    corner_style:
+      enabled: false
+      style: 'square'
+    transparency:
+      enabled: false
+      opacity: '100%'
+
+window_behavior:
+  # State new windows open in. Allowed values: 'tiling', 'floating'.
+  initial_state: 'tiling'
+
+  # Defaults used when a window enters a state (and by `set-floating` etc.
+  # when called without flags).
+  state_defaults:
+    floating:
+      centered: true
+      shown_on_top: false
+    fullscreen:
+      # Maximize instead of true fullscreen where the window supports it.
+      maximized: false
+      shown_on_top: false
+
+workspaces:
+  # Deliberately not bound to monitors — `bind_to_monitor` takes a monitor
+  # index, which differs per machine and is the main reason a shared config
+  # breaks. Bind workspaces in machines/<COMPUTERNAME>/config.yaml instead:
+  #
+  #   - name: '1'
+  #     display_name: 'web'   # shown in Zebar rather than the raw name
+  #     bind_to_monitor: 0    # 0 is the primary monitor
+  #     keep_alive: true      # don't destroy the workspace when it empties
+  - name: '1'
+  - name: '2'
+  - name: '3'
+  - name: '4'
+  - name: '5'
+  - name: '6'
+  - name: '7'
+  - name: '8'
+  - name: '9'
+
+window_rules:
+  # Windows that GlazeWM should leave alone entirely.
+  - commands: ['ignore']
+    match:
+      # Zebar's own windows.
+      - window_process: { equals: 'zebar' }
+
+      # Browser picture-in-picture players.
+      - window_title: { regex: '[Pp]icture.in.[Pp]icture' }
+        window_class: { regex: 'Chrome_WidgetWin_1|MozillaDialogClass' }
+
+      # PowerToys: Run/PowerAccent, Peek, and the Command Palette.
+      - window_process: { equals: 'PowerToys' }
+        window_class: { regex: 'HwndWrapper\[PowerToys\.PowerAccent.*?\]' }
+      - window_process: { equals: 'PowerToys' }
+        window_title: { regex: '.*? - Peek' }
+      - window_title: { equals: 'Command Palette' }
+        window_class: { equals: 'WinUIDesktopWin32WindowClass' }
+
+      # Wallpaper engines and Office helper windows that aren't real windows.
+      - window_process: { equals: 'Lively' }
+        window_class: { regex: 'HwndWrapper' }
+      - window_process: { equals: 'EXCEL' }
+        window_class: { not_regex: 'XLMAIN' }
+      - window_process: { equals: 'WINWORD' }
+        window_class: { not_regex: 'OpusApp' }
+      - window_process: { equals: 'POWERPNT' }
+        window_class: { not_regex: 'PPTFrameClass' }
+
+  # Small utility windows are more useful floating than tiled.
+  - commands: ['set-floating --centered']
+    match:
+      - window_process: { equals: 'Taskmgr' }
+      - window_process: { equals: 'mmc' }
+      - window_title: { equals: 'Run' }
+        window_class: { equals: '#32770' }
+
+  # Example: always send an app to a given workspace. Find the process name
+  # with `glazewm query windows` while the window is focused.
+  # - commands: ['move --workspace 2']
+  #   match:
+  #     - window_process: { equals: 'Spotify' }
+
+binding_modes:
+  # alt+r enters resize mode: arrows or HJKL resize, escape/enter exits.
+  - name: 'resize'
+    keybindings:
+      - commands: ['resize --width -2%']
+        bindings: ['h', 'left']
+      - commands: ['resize --width +2%']
+        bindings: ['l', 'right']
+      - commands: ['resize --height +2%']
+        bindings: ['k', 'up']
+      - commands: ['resize --height -2%']
+        bindings: ['j', 'down']
+      - commands: ['wm-disable-binding-mode --name resize']
+        bindings: ['escape', 'enter', 'alt+r']
+
+keybindings:
+  # --- Focus -----------------------------------------------------------
+  - commands: ['focus --direction left']
+    bindings: ['alt+h', 'alt+left']
+  - commands: ['focus --direction right']
+    bindings: ['alt+l', 'alt+right']
+  - commands: ['focus --direction up']
+    bindings: ['alt+k', 'alt+up']
+  - commands: ['focus --direction down']
+    bindings: ['alt+j', 'alt+down']
+
+  # --- Move the focused window -----------------------------------------
+  - commands: ['move --direction left']
+    bindings: ['alt+shift+h', 'alt+shift+left']
+  - commands: ['move --direction right']
+    bindings: ['alt+shift+l', 'alt+shift+right']
+  - commands: ['move --direction up']
+    bindings: ['alt+shift+k', 'alt+shift+up']
+  - commands: ['move --direction down']
+    bindings: ['alt+shift+j', 'alt+shift+down']
+
+  # --- Resize ----------------------------------------------------------
+  - commands: ['resize --width -2%']
+    bindings: ['alt+u']
+  - commands: ['resize --width +2%']
+    bindings: ['alt+p']
+  - commands: ['resize --height +2%']
+    bindings: ['alt+o']
+  - commands: ['resize --height -2%']
+    bindings: ['alt+i']
+
+  # Enter resize mode (see `binding_modes` above).
+  - commands: ['wm-enable-binding-mode --name resize']
+    bindings: ['alt+r']
+
+  # --- Window state ----------------------------------------------------
+  # Where new tiling windows get inserted (horizontal <-> vertical).
+  - commands: ['toggle-tiling-direction']
+    bindings: ['alt+v']
+
+  # Cycle focus: tiling -> floating -> fullscreen.
+  - commands: ['wm-cycle-focus']
+    bindings: ['alt+space']
+
+  - commands: ['toggle-floating --centered']
+    bindings: ['alt+shift+space']
+  - commands: ['toggle-tiling']
+    bindings: ['alt+t']
+  - commands: ['toggle-fullscreen']
+    bindings: ['alt+f']
+  - commands: ['toggle-minimized']
+    bindings: ['alt+m']
+  - commands: ['close']
+    bindings: ['alt+shift+q']
+
+  # --- Window manager --------------------------------------------------
+  # Suspend GlazeWM and all its keybindings until pressed again. Handy when
+  # a remote-desktop or VM window needs the alt keys.
+  - commands: ['wm-toggle-pause']
+    bindings: ['alt+shift+p']
+
+  - commands: ['wm-reload-config']
+    bindings: ['alt+shift+r']
+  - commands: ['wm-redraw']
+    bindings: ['alt+shift+w']
+  - commands: ['wm-exit']
+    bindings: ['alt+shift+e']
+
+  # --- Launchers -------------------------------------------------------
+  # Windows Terminal ships with Windows 11. On a machine without it, either
+  # override this in machines/<COMPUTERNAME>/config.yaml or swap in
+  # 'shell-exec cmd'.
+  - commands: ['shell-exec wt']
+    bindings: ['alt+enter']
+  - commands: ['shell-exec cmd']
+    bindings: ['alt+shift+enter']
+  - commands: ['shell-exec explorer']
+    bindings: ['alt+shift+n']
+
+  # --- Workspaces ------------------------------------------------------
+  # Next / previous active workspace, and the last-focused one.
+  - commands: ['focus --next-active-workspace']
+    bindings: ['alt+s']
+  - commands: ['focus --prev-active-workspace']
+    bindings: ['alt+a']
+  - commands: ['focus --recent-workspace']
+    bindings: ['alt+d']
+
+  - commands: ['focus --workspace 1']
+    bindings: ['alt+1']
+  - commands: ['focus --workspace 2']
+    bindings: ['alt+2']
+  - commands: ['focus --workspace 3']
+    bindings: ['alt+3']
+  - commands: ['focus --workspace 4']
+    bindings: ['alt+4']
+  - commands: ['focus --workspace 5']
+    bindings: ['alt+5']
+  - commands: ['focus --workspace 6']
+    bindings: ['alt+6']
+  - commands: ['focus --workspace 7']
+    bindings: ['alt+7']
+  - commands: ['focus --workspace 8']
+    bindings: ['alt+8']
+  - commands: ['focus --workspace 9']
+    bindings: ['alt+9']
+
+  # Move the current workspace to the monitor in a given direction.
+  - commands: ['move-workspace --direction left']
+    bindings: ['alt+shift+a']
+  - commands: ['move-workspace --direction right']
+    bindings: ['alt+shift+f']
+  - commands: ['move-workspace --direction up']
+    bindings: ['alt+shift+d']
+  - commands: ['move-workspace --direction down']
+    bindings: ['alt+shift+s']
+
+  # Send the focused window to a workspace and follow it there.
+  - commands: ['move --workspace 1', 'focus --workspace 1']
+    bindings: ['alt+shift+1']
+  - commands: ['move --workspace 2', 'focus --workspace 2']
+    bindings: ['alt+shift+2']
+  - commands: ['move --workspace 3', 'focus --workspace 3']
+    bindings: ['alt+shift+3']
+  - commands: ['move --workspace 4', 'focus --workspace 4']
+    bindings: ['alt+shift+4']
+  - commands: ['move --workspace 5', 'focus --workspace 5']
+    bindings: ['alt+shift+5']
+  - commands: ['move --workspace 6', 'focus --workspace 6']
+    bindings: ['alt+shift+6']
+  - commands: ['move --workspace 7', 'focus --workspace 7']
+    bindings: ['alt+shift+7']
+  - commands: ['move --workspace 8', 'focus --workspace 8']
+    bindings: ['alt+shift+8']
+  - commands: ['move --workspace 9', 'focus --workspace 9']
+    bindings: ['alt+shift+9']
